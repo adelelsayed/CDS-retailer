@@ -2,6 +2,7 @@ import hl7
 import requests as re
 import json
 import datetime as dt
+import hl7apy.parser as hl
 
 '''NDS Message'''
 
@@ -73,6 +74,55 @@ obsparams = {
 
 obsparams = json.dumps(obsparams)
 
-reqme = re.post('http://127.0.0.1:8000/main/',data = {'message':obsparams})
+#reqme = re.post('http://127.0.0.1:8000/main/',data = {'message':obsparams})
+
+#print reqme
+
+'''MASCC message'''
+masMessage = 'MSH|^~\&|HL7Soup|Instance1|HL7Soup|Instance2|20180406170000||??????|64322|P|2.5.1\r'
+masMessage += 'PID|1|103456|103456||Stanley^Jim^^||19780429|M|||19 Raymond St^^Albany^^5632^UK|||||M|CHR||46264212||||London|Y\r'
+masMessage += 'PV1|1|O|CARE POINT^5^1^Instate^^C|R||||||||||||N|||857333|||||||||||||||||||||||||200911011125||||||12\r'
+masMessage+= 'OBR |1|||4^MASCC||||||||||||||1\r'
+masMessage += 'OBX|1|NM|123||500|m3||||||||20180406170000\r'
+masMessage += 'OBX|1|NM|124||39|celsius degrees||||||||20180406170000\r'
+masMessage += 'OBX|1|NM|125||90|MMHG||||||||20180406170000\r'
+masMessage += 'PRB|UC|20180106120000|55342001^Neoplastic disease^SNOMED CT|1|||200911021022\r'
+masMessage += 'PRB|UC|20180106120000|1601000119105^Moderate dehydration^SNOMED CT|1|||200911021022'
+
+mas = hl7.parse(masMessage)
+masNamer = (str(mas[1][5][0])).split('^')
+masName = masNamer[1]+' '+masNamer[0]
+
+problemList = {}
+
+problemList = {str(i[3]).split('^')[0]:str(i[3]).split('^')[1] for i in mas['PRB']}
+
+
+
+
+masparams = {
+
+    'patientId':str(mas[1][2][0]),
+    'patientName': masName,
+    'mrn' : str(mas[1][9][0]),
+    'dob' : str(mas[1][7][0]),
+    'targetUser' : str(mas[3][18][0]),
+    'alertCode' : str(mas[3][4][0]).split('^')[0].strip(),
+    'text': '',
+    'timeStamp': str(mas[0][7][0]),
+    'module': str(mas[3][4][0]).split('^')[1],
+    'encounter': str(mas[2][19][0]),
+    'encounterAlias': str(mas[2][50][0]),
+    'encounerDisplay': str(mas[2][2][0]) ,
+    'neutrophilsCount': str(mas[3][4][0]) ,
+    'temperature':str(mas[4][4][0]) ,
+    'sbp': str(mas[5][4][0]),
+    'problemList':problemList
+
+
+    }
+masparams = json.dumps(masparams)
+
+reqme = re.post('http://127.0.0.1:8000/mascc/',data = {'message':masparams})
 
 print reqme

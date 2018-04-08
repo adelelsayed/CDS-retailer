@@ -14,7 +14,7 @@ def poppy():
     
         
     rec = Alert_Definition.objects.get_or_create(
- alert_title= 'ESC CVS Risk SCORE', category='CVS',
+ alert_title= 'MASCC', category='Oncology',
 severity='High Risk',updt_id=User.objects.get(user_identifier=1.0)
         )[0]
     rec.save()

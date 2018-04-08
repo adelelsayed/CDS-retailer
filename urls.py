@@ -9,6 +9,9 @@ urlpatterns = [
    url(r'^main/$',
     views.TheView.as_view({'post': 'view'}), name = 'main'),
 
+    url(r'^mascc/$',
+    views.MASCC.as_view({'post': 'MASCCView'}), name = 'mascc'),
+
     url(r'docview/$',views.TheView.as_view({'get':'browse'}),name = 'docView'),
 
 
